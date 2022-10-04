@@ -76,6 +76,16 @@ pub enum StringToken<'a> {
     RubyCenterPerChar,
     AltLineBreak,
     Terminator,
+
+    // FIXME: Added placeholder tokens for unknown control characters
+    #[allow(non_camel_case_types)]
+    Unknown_0x07,
+    #[allow(non_camel_case_types)]
+    Unknown_0x3C,
+    #[allow(non_camel_case_types)]
+    Unknown_0x78,
+    #[allow(non_camel_case_types)]
+    Unknown_0x5A,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -130,7 +140,9 @@ impl<'a> StringToken<'_> {
 
         fn peek_op(i: &[u8]) -> IResult<&[u8], u8> {
             let (_, b) = peek(be_u8)(i)?;
-            let (i, _) = cond(b < 0x80u8 || b == 0xFFu8, take(1usize))(i)?;
+            // FIXME: Added additional control sequences (?)
+            // print!("{b:x?} ");
+            let (i, _) = cond(b < 0x80u8 || b == 0xB4u8 || b == 0xF0u8 || b == 0xFFu8, take(1usize))(i)?;
             Ok((i, b))
         }
 
@@ -165,8 +177,16 @@ impl<'a> StringToken<'_> {
             0x1E => Ok((i, StringToken::RubyCenterPerChar)),
             0x1F => Ok((i, StringToken::AltLineBreak)),
             0xFF => Ok((i, StringToken::Terminator)),
+
+            // FIXME: Added placeholder tokens for unknown control characters
+            0x07 => Ok((i, StringToken::Unknown_0x07)),
+            0x3C => Ok((i, StringToken::Unknown_0x3C)),
+            0x78 => Ok((i, StringToken::Unknown_0x78)),
+            0x5A => Ok((i, StringToken::Unknown_0x5A)),
+
             #[allow(overlapping_patterns)]
             0x00..=0x7F => Err(Error::UnrecognizedInstr(op)),
+
             _ => parse(i, text, |chars| StringToken::Text(chars.into())),
         }
     }
@@ -203,6 +223,13 @@ impl<'a> StringToken<'_> {
             StringToken::RubyCenterPerChar => 0x1E,
             StringToken::AltLineBreak => 0x1F,
             StringToken::Terminator => 0xFF,
+
+            // FIXME: Added placeholder tokens for unknown control characters
+            StringToken::Unknown_0x07 => 0x07,
+            StringToken::Unknown_0x3C => 0x3C,
+            StringToken::Unknown_0x78 => 0x78,
+            StringToken::Unknown_0x5A => 0x5A,
+
             StringToken::Text(_) => unreachable!(),
         };
 
