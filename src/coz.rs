@@ -230,6 +230,13 @@ impl<'a> StringToken<'a> {
             StringToken::AutoForward => ("auto-forward", None),
             StringToken::AutoForward_1A => ("auto-forward-1a", None),
             StringToken::AltLineBreak => ("alt-linebreak", None),
+
+            // FIXME: Added placeholder tokens for unknown control characters
+            StringToken::Unknown_0x07 => ("%07", None),
+            StringToken::Unknown_0x3C => ("%3C", None),
+            StringToken::Unknown_0x78 => ("%78", None),
+            StringToken::Unknown_0x5A => ("%5A", None),
+
             StringToken::Text(_) => unreachable!(),
         };
         Ok(StringSegment::Tag(Tag::new(
